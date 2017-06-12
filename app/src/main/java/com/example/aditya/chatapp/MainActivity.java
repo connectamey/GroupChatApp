@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> list_of_rooms = new ArrayList<>();
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference().getRoot();
+    private DatabaseReference root2, root3;
+    private String temp_key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +59,23 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 Map<String,Object> map = new HashMap<String, Object>();
-                map.put(room_name.getText().toString(),"");
+                String roomName = room_name.getText().toString();
+                map.put(roomName, "");
                 root.updateChildren(map);
+
+                root2 = root.child("Permissions");
+                Map<String, Object> map2 = new HashMap<String, Object>();
+                map2.put(roomName, "");
+                root2.updateChildren(map2);
+
+
+                root3 = root2.child(roomName);
+                Map<String, Object> map3 = new HashMap<String, Object>();
+                temp_key = root3.push().getKey();
+                map3.put(temp_key, name);
+                root3.updateChildren(map3);
+
+                room_name.setText("");
 
             }
         });
@@ -71,9 +88,12 @@ public class MainActivity extends AppCompatActivity {
                 Iterator i = dataSnapshot.getChildren().iterator();
 
                 while (i.hasNext()){
-                    set.add(((DataSnapshot)i.next()).getKey());
-                }
 
+                    set.add(((DataSnapshot)i.next()).getKey());
+
+
+                }
+                set.remove(String.valueOf("Permissions"));
                 list_of_rooms.clear();
                 list_of_rooms.addAll(set);
 

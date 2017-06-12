@@ -3,6 +3,7 @@ package com.example.aditya.chatapp;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +28,7 @@ public class Chat_Room extends AppCompatActivity {
     private String user_name,room_name;
     private DatabaseReference root ;
     private String temp_key;
+    private String chat_msg, chat_user_name;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,23 +44,8 @@ public class Chat_Room extends AppCompatActivity {
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child(room_name);
-
-        btn_send_msg.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Map<String,Object> map = new HashMap<String, Object>();
-                temp_key = root.push().getKey();
-                root.updateChildren(map);
-
-                DatabaseReference message_root = root.child(temp_key);
-                Map<String,Object> map2 = new HashMap<String, Object>();
-                map2.put("name",user_name);
-                map2.put("msg",input_msg.getText().toString());
-
-                message_root.updateChildren(map2);
-            }
-        });
+        btn_send_msg.setEnabled(false);
+        Permissioncheck();
 
         root.addChildEventListener(new ChildEventListener() {
             @Override
@@ -90,9 +77,96 @@ public class Chat_Room extends AppCompatActivity {
             }
         });
 
+        btn_send_msg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                Map<String,Object> map = new HashMap<String, Object>();
+                temp_key = root.push().getKey();
+                root.updateChildren(map);
+
+                DatabaseReference message_root = root.child(temp_key);
+                Map<String,Object> map2 = new HashMap<String, Object>();
+                map2.put("name",user_name);
+                map2.put("msg",input_msg.getText().toString());
+
+                message_root.updateChildren(map2);
+                input_msg.setText("");
+            }
+        });
+
     }
 
-    private String chat_msg,chat_user_name;
+    private void Permissioncheck() {
+
+        DatabaseReference temp = FirebaseDatabase.getInstance().getReference().getRoot().child("Permissions");
+
+
+        temp.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Iterator i = dataSnapshot.getChildren().iterator();
+
+                if (dataSnapshot.getKey().equalsIgnoreCase(room_name)) {
+                    while (i.hasNext()) {
+
+                        chat_msg = (String) ((DataSnapshot) i.next()).getValue();
+                        Log.v("check", chat_msg);
+
+                        if (chat_msg.equalsIgnoreCase(user_name)) {
+                            flag();
+                            break;
+                        }
+
+
+                    }
+
+            }
+
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Iterator i = dataSnapshot.getChildren().iterator();
+
+                while (i.hasNext()) {
+
+                    chat_msg = (String) ((DataSnapshot) i.next()).getValue();
+                    Log.v("check", chat_msg);
+                    if (chat_msg.equalsIgnoreCase(user_name)) {
+                        flag();
+                        break;
+                    }
+
+
+                }
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
+    private void flag() {
+        btn_send_msg.setEnabled(true);
+    }
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
