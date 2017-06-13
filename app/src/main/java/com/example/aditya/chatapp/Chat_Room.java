@@ -21,12 +21,12 @@ import java.util.Map;
 
 public class Chat_Room extends AppCompatActivity {
 
-    private Button btn_send_msg;
-    private EditText input_msg;
+    private Button btn_send_msg, btn_add;
+    private EditText input_msg, user_add_name;
     private TextView chat_conversation;
 
     private String user_name,room_name;
-    private DatabaseReference root ;
+    private DatabaseReference root, root2;
     private String temp_key;
     private String chat_msg, chat_user_name;
 
@@ -38,13 +38,19 @@ public class Chat_Room extends AppCompatActivity {
         btn_send_msg = (Button) findViewById(R.id.btn_send);
         input_msg = (EditText) findViewById(R.id.msg_input);
         chat_conversation = (TextView) findViewById(R.id.textView);
+        btn_add = (Button) findViewById(R.id.btn_add);
+        user_add_name = (EditText) findViewById(R.id.user_add);
+
 
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child(room_name);
+        root2 = FirebaseDatabase.getInstance().getReference().child("Permissions").child(room_name);
         btn_send_msg.setEnabled(false);
+        btn_add.setEnabled(false);
+
         Permissioncheck();
 
         root.addChildEventListener(new ChildEventListener() {
@@ -96,6 +102,16 @@ public class Chat_Room extends AppCompatActivity {
             }
         });
 
+        btn_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Map<String, Object> map3 = new HashMap<String, Object>();
+                temp_key = root2.push().getKey();
+                map3.put(temp_key, user_add_name.getText().toString());
+                root2.updateChildren(map3);
+
+            }
+        });
     }
 
     private void Permissioncheck() {
@@ -131,15 +147,19 @@ public class Chat_Room extends AppCompatActivity {
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 Iterator i = dataSnapshot.getChildren().iterator();
 
-                while (i.hasNext()) {
+                if (dataSnapshot.getKey().equalsIgnoreCase(room_name)) {
+                    while (i.hasNext()) {
 
-                    chat_msg = (String) ((DataSnapshot) i.next()).getValue();
-                    Log.v("check", chat_msg);
-                    if (chat_msg.equalsIgnoreCase(user_name)) {
-                        flag();
-                        break;
+                        chat_msg = (String) ((DataSnapshot) i.next()).getValue();
+                        Log.v("check", chat_msg);
+
+                        if (chat_msg.equalsIgnoreCase(user_name)) {
+                            flag();
+                            break;
+                        }
+
+
                     }
-
 
                 }
 
@@ -165,6 +185,8 @@ public class Chat_Room extends AppCompatActivity {
     }
 
     private void flag() {
+
+        btn_add.setEnabled(true);
         btn_send_msg.setEnabled(true);
     }
 
@@ -181,4 +203,5 @@ public class Chat_Room extends AppCompatActivity {
 
 
     }
+
 }

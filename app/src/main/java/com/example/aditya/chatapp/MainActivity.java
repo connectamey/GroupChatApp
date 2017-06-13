@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Button add_room;
     private EditText room_name;
-
     private ListView listView;
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_rooms = new ArrayList<>();
@@ -39,21 +38,17 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference root2, root3;
     private String temp_key;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        request_user_name();
         add_room = (Button) findViewById(R.id.btn_add_room);
         room_name = (EditText) findViewById(R.id.room_name_edittext);
         listView = (ListView) findViewById(R.id.listView);
-
         arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list_of_rooms);
-
         listView.setAdapter(arrayAdapter);
-
-        request_user_name();
-
         add_room.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
